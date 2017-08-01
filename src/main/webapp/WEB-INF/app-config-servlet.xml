@@ -59,10 +59,17 @@
             </props>
         </property>
     </bean>
-    
-    <bean id="persistenceDao" class="com.abs.dao.PersistenceDaoImpl"></bean>
-    <bean id="manager" class="com.abs.service.ManagerImpl"></bean>
- 
+
+    <!--DAO Entries-->
+    <bean id="customerDao" class="com.abs.dao.CustomerDaoImpl"></bean>
+    <bean id="walletDao" class="com.abs.dao.WalletDaoImpl"></bean>
+    <!--DAO Entries End-->
+
+    <!--Service Entries-->
+    <bean id="customerService" class="com.abs.service.CustomerServiceImpl"></bean>
+    <bean id="walletService" class="com.abs.service.WalletServiceImpl"></bean>
+    <!--Service Entries End-->
+
     <tx:annotation-driven />
     <bean id="transactionManager"
         class="org.springframework.orm.hibernate3.HibernateTransactionManager">

@@ -1,7 +1,7 @@
 package com.abs.controller;
 
 import com.abs.entity.CustomerEntity;
-import com.abs.service.ManagerApi;
+import com.abs.service.CustomerServiceApi;
 import com.abs.utils.AppUtils;
 import com.abs.utils.Constant;
 import com.abs.utils.Response;
@@ -11,19 +11,20 @@ import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Controller
-public class EditCustomerController {
+public class CustomerController {
 	
 	@Autowired
-	private ManagerApi manager;
+	private CustomerServiceApi customerService;
 	
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String listCustomers(ModelMap map) 
 	{
 		map.addAttribute("customer", new CustomerEntity());
-		map.addAttribute("customerList", manager.getAllCustomers());
+		map.addAttribute("customerList", customerService.getAllCustomers());
 		
 		return "editEmployeeList";
 	}
@@ -32,18 +33,18 @@ public class EditCustomerController {
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public String addCustomer(@ModelAttribute(value="customer") CustomerEntity customer, BindingResult result)
 	{
-		manager.addCustomer(customer);
+		customerService.addCustomer(customer);
 		return "redirect:/";
 	}
 
 	@RequestMapping("/delete/{customerId}")
 	public String deleteEmployee(@PathVariable("customerId") Integer customerId)
 	{
-		manager.deleteCustomer(customerId);
+		customerService.deleteCustomer(customerId);
 		return "redirect:/";
 	}
 
-	@CrossOrigin(origins = "*")
+	@CrossOrigin
 	@ResponseBody
 	@RequestMapping(value = "/addCustomer", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
 	public String addCustomer(String firstName, String lastName, String userName, String email, String mobileNo, String password)
@@ -57,7 +58,7 @@ public class EditCustomerController {
 			customerEntity.setEmail(email);
 			customerEntity.setTelephone(mobileNo);
 			customerEntity.setPassword(password);
-			manager.addCustomer(customerEntity);
+			customerService.addCustomer(customerEntity);
 			response.setStatusCode("00");
 			response.setStatusValue("OK");
 		}catch (Exception e) {
@@ -67,17 +68,23 @@ public class EditCustomerController {
 		return AppUtils.convertToJson(response);
 	}
 
-	@CrossOrigin(origins = "*")
+	@CrossOrigin
 	@ResponseBody
 	@RequestMapping(value = "/login", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-	public String verifyCustomer(String userName, String password)
+	public String verifyCustomer(HttpServletRequest request,String userName, String password)
 	{
 		Response response = new Response();
 		List<CustomerEntity> customerEntity = null;
 		try {
 
-			customerEntity=manager.verifyCustomer(userName,password);
+			customerEntity= customerService.verifyCustomer(userName,password);
 			if(customerEntity.size()>0){
+
+				for(CustomerEntity ce:customerEntity){
+					request.getSession().setAttribute(Constant.ID_CUSTOMER_KEY,ce.getId());
+					break;
+				}
+
 				response.setStatusCode("00");
 				response.setStatusValue("OK");
 			}else{
@@ -92,7 +99,7 @@ public class EditCustomerController {
 	}
 
 
-	public void setManager(ManagerApi manager) {
-		this.manager = manager;
-	}
+	/*public void setCustomerService(CustomerServiceApi customerService) {
+		this.customerService = customerService;
+	}*/
 }

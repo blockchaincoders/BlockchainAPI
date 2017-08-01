@@ -5,10 +5,10 @@ import java.util.Optional;
 
 import com.abs.entity.CustomerEntity;
 
-public interface PersistenceDaoApi
+public interface CustomerDaoApi
 {
-    public void addCustomer(CustomerEntity customer);
-    public List<CustomerEntity> getAllCustomers();
-    public void deleteCustomer(Integer customerId);
+    void addCustomer(CustomerEntity customer);
+    List<CustomerEntity> getAllCustomers();
+    void deleteCustomer(Integer customerId);
     List<CustomerEntity> fetchCustomerByUsernamePassword(String username , String password);
 }

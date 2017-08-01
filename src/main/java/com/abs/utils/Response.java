@@ -1,11 +1,13 @@
 package com.abs.utils;
 
-/**
- * Created by imran.khan on 7/19/2017.
- */
+import java.util.List;
+
 public class Response {
+
     private String statusCode;
     private String statusValue;
+    private Object data;
+    private List dataList;
 
     public String getStatusCode() {
         return statusCode;
@@ -21,5 +23,21 @@ public class Response {
 
     public void setStatusValue(String statusValue) {
         this.statusValue = statusValue;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
+
+    public List getDataList() {
+        return dataList;
+    }
+
+    public void setDataList(List dataList) {
+        this.dataList = dataList;
     }
 }

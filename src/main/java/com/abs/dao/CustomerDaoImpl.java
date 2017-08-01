@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.abs.entity.CustomerEntity;
 
 @Repository
-public class PersistenceDaoImpl implements PersistenceDaoApi {
+public class CustomerDaoImpl implements CustomerDaoApi {
 
 	@Autowired
     private SessionFactory sessionFactory;
