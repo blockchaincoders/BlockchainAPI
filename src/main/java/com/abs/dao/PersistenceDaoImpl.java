@@ -30,7 +30,12 @@ public class PersistenceDaoImpl implements PersistenceDaoApi {
         	this.sessionFactory.getCurrentSession().delete(customer);
         }
 	}
-	
-	
 
+	public List<CustomerEntity> fetchCustomerByUsernamePassword(String username, String password) {
+		String query=new StringBuilder()
+				.append("from CustomerEntity as ce where ce.userName = '").append(username)
+				.append("'").append(" and ce.password = '").append(password).append("'").toString();
+		return this.sessionFactory.getCurrentSession().createQuery(query).list();
+
+	}
 }

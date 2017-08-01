@@ -11,6 +11,8 @@ import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 public class EditCustomerController {
 	
@@ -26,6 +28,7 @@ public class EditCustomerController {
 		return "editEmployeeList";
 	}
 
+
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public String addCustomer(@ModelAttribute(value="customer") CustomerEntity customer, BindingResult result)
 	{
@@ -40,8 +43,9 @@ public class EditCustomerController {
 		return "redirect:/";
 	}
 
+	@CrossOrigin(origins = "*")
 	@ResponseBody
-	@RequestMapping(value = "/addCustomer", method = { RequestMethod.GET }, produces = Constant.APPLICATION_JSON)
+	@RequestMapping(value = "/addCustomer", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
 	public String addCustomer(String firstName, String lastName, String userName, String email, String mobileNo, String password)
 	{
 		Response response = new Response();
@@ -54,8 +58,32 @@ public class EditCustomerController {
 			customerEntity.setTelephone(mobileNo);
 			customerEntity.setPassword(password);
 			manager.addCustomer(customerEntity);
-			response.setStatusCode("0");
+			response.setStatusCode("00");
 			response.setStatusValue("OK");
+		}catch (Exception e) {
+			response.setStatusCode("99");
+			response.setStatusValue("Error:"+e.getMessage());
+		}
+		return AppUtils.convertToJson(response);
+	}
+
+	@CrossOrigin(origins = "*")
+	@ResponseBody
+	@RequestMapping(value = "/login", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+	public String verifyCustomer(String userName, String password)
+	{
+		Response response = new Response();
+		List<CustomerEntity> customerEntity = null;
+		try {
+
+			customerEntity=manager.verifyCustomer(userName,password);
+			if(customerEntity.size()>0){
+				response.setStatusCode("00");
+				response.setStatusValue("OK");
+			}else{
+				response.setStatusCode("420");
+				response.setStatusValue("Username/Password invalid");
+			}
 		}catch (Exception e) {
 			response.setStatusCode("99");
 			response.setStatusValue("Error:"+e.getMessage());

@@ -1,14 +1,12 @@
 package com.abs.service;
 
-import java.util.List;
-
 import com.abs.dao.PersistenceDaoApi;
+import com.abs.entity.CustomerEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.abs.dao.PersistenceDaoApi;
-import com.abs.entity.CustomerEntity;
+import java.util.List;
 
 @Service
 public class ManagerImpl implements ManagerApi {
@@ -29,6 +27,12 @@ public class ManagerImpl implements ManagerApi {
 	@Transactional
 	public void deleteCustomer(Integer CustomerId) {
 		persistenceDao.deleteCustomer(CustomerId);
+	}
+
+	@Transactional
+	public List<CustomerEntity> verifyCustomer(String username, String password) {
+
+		return persistenceDao.fetchCustomerByUsernamePassword(username,password);
 	}
 
 	public void setPersistenceDaoApi(PersistenceDaoApi persistenceDao) {
