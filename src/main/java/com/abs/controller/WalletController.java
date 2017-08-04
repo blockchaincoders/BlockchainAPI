@@ -1,5 +1,7 @@
 package com.abs.controller;
 
+import com.abs.entity.BlockInfoBean;
+import com.abs.entity.ChatDataBean;
 import com.abs.entity.WalletEntity;
 import com.abs.service.WalletServiceApi;
 import com.abs.utils.AppUtils;
@@ -12,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Wallet;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
@@ -56,15 +60,20 @@ public class WalletController {
 
         try {
 
-            Integer idCustomer = 1;
+            Integer idCustomer = (Integer) request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY);
+            //Integer idCustomer = (Integer) request.getAttribute(Constant.ID_CUSTOMER_KEY);
+            System.out.println(idCustomer);
 //            long idCustomer =(long) request.getSession().getAttribute(Constant.ID_CUSTOMER_KEY);
-            String walletAddress = createNewWalletAccount(walletAlias,passphrase,idCustomer);
+            String fileNameOrg = createNewWalletAccount(walletAlias,passphrase,idCustomer);
 
             //create wallet entity
             WalletEntity entity = new WalletEntity();
             entity.setWalletAlias(walletAlias);
             entity.setWalletPassphrase(passphrase);
-            entity.setWalletAddress(walletAddress);
+            String fileName = fileNameOrg.substring(fileNameOrg.lastIndexOf("-") + 1, fileNameOrg.lastIndexOf(".json"));
+
+            entity.setWalletAddress(fileName);
+            entity.setWalletFileName(fileNameOrg);
             entity.setIdCustomer(idCustomer);
             //entity creation ends
 
@@ -86,12 +95,9 @@ public class WalletController {
     public String fetchWallets(HttpServletRequest request)
     {
         Response response = new Response();
-
         try {
             //todo fetch customer id from session
-            Integer idCustomer = 1;
-//            long idCustomer =(long) request.getSession().getAttribute(Constant.ID_CUSTOMER_KEY);
-
+            Integer idCustomer =(Integer) request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY);
             List<WalletEntity> walletEntityList = walletService.fetchAllCustomerWallets(idCustomer);
 
             response.setDataList(walletEntityList);
@@ -103,6 +109,211 @@ public class WalletController {
             response.setStatusValue("Error:"+e.getMessage());
         }
         return AppUtils.convertToJson(response);
+    }
+
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/fetchBalance", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String fetchBalance(String walletAddress)
+    {
+        Response response = new Response();
+        try {
+
+            EthGetBalance ethGetBalance = getEtherBalanceOfWallet(walletAddress);
+            BigInteger value = ethGetBalance.getBalance();
+            response.setData(Convert.fromWei(String.valueOf(value), Convert.Unit.ETHER) + " Ether (" + value + " Wei)");
+
+            response.setStatusCode("00");
+            response.setStatusValue("OK");
+
+        }catch (Exception e) {
+            response.setStatusCode("99");
+            response.setStatusValue("Error:"+e.getMessage());
+        }
+        return AppUtils.convertToJson(response);
+    }
+
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/transferFunds", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String transferFunds(String fromWallet, String toWallet, Double amount)
+    {
+        Response response = new Response();
+        try {
+
+            WalletEntity walletEntity = walletService.fetchWalletDetails(fromWallet);
+            WalletEntity toWalletEntity = walletService.fetchWalletDetails(toWallet);
+
+            String path = "D:\\BlockChain\\WalletFiles\\"+ walletEntity.getWalletFileName();
+            String walletPassphrase = walletEntity.getWalletPassphrase();
+
+            TransactionReceipt transactionReceipt = doTransaction(walletPassphrase, path, fromWallet, toWalletEntity.getWalletAddress(), amount);
+            response.setData(transactionReceipt);
+
+            response.setStatusCode("00");
+            response.setStatusValue("OK");
+
+        }catch (Exception e) {
+            response.setStatusCode("99");
+            response.setStatusValue("Error:"+e.getMessage());
+        }
+        return AppUtils.convertToJson(response);
+    }
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/getBlockInfo", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String getBlockInfo()
+    {
+        Response response = new Response();
+        try {
+
+            if(web3j==null) {
+                web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
+            }
+
+            EthBlock.Block block = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf("latest"), true).send().getBlock();
+
+            BlockInfoBean blockInfoBean = new BlockInfoBean();
+            blockInfoBean.setNumber(block.getNumber().toString());
+            blockInfoBean.setHash(block.getHash());
+            blockInfoBean.setParentHash(block.getParentHash());
+            blockInfoBean.setTransactionSize(String.valueOf(block.getTransactions().size()));
+            blockInfoBean.setTransactionsRoot(block.getTransactionsRoot());
+            blockInfoBean.setTimeStamp(Instant.ofEpochSecond(block.getTimestamp().longValueExact()).atZone(ZoneId.of("UTC")).toLocalDateTime().toString());
+            blockInfoBean.setMiner(block.getMiner());
+            blockInfoBean.setExtraData(block.getExtraData());
+            blockInfoBean.setNonceRaw(block.getNonceRaw());
+            blockInfoBean.setDifficulty(block.getDifficulty().toString());
+            blockInfoBean.setGasLimit(block.getGasLimit().toString());
+            blockInfoBean.setLogsBloom(block.getLogsBloom());
+            blockInfoBean.setGasUsed(block.getGasUsed().toString());
+            blockInfoBean.setMixHash(block.getMixHash());
+            blockInfoBean.setReceiptsRoot(block.getReceiptsRoot());
+            blockInfoBean.setSizeRaw(block.getSizeRaw());
+
+            List<EthBlock.TransactionResult>  transactionResults = block.getTransactions();
+            for (int i=0; i< transactionResults.size(); i++) {
+                EthBlock.TransactionResult transactionResult = transactionResults.get(i);
+                blockInfoBean.getTransactionResults().add(transactionResult.get().toString());
+            }
+
+            response.setData(blockInfoBean);
+            response.setStatusCode("00");
+            response.setStatusValue("OK");
+
+        }catch (Exception e) {
+            response.setStatusCode("99");
+            response.setStatusValue("Error:"+e.getMessage());
+        }
+        return AppUtils.convertToJson(response);
+    }
+
+
+
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/fetchGraphData", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String chartData(){
+
+        ChatDataBean bean = new ChatDataBean();
+
+        bean.setElement("morris-area-chart");
+
+        ChatDataBean.Information data[]= new ChatDataBean.Information[10];
+        ChatDataBean.Information info1= new ChatDataBean().new Information();
+        info1.setPeriod("2010 Q1");
+        info1.setIphone(2666);
+        info1.setIpad(null);
+        info1.setItouch(2647);
+
+        ChatDataBean.Information info2= new ChatDataBean().new Information();
+        info2.setPeriod("2010 Q2");
+        info2.setIphone(2778);
+        info2.setIpad(2294);
+        info2.setItouch(2441);
+
+        ChatDataBean.Information info3= new ChatDataBean().new Information();
+        info3.setPeriod("2010 Q3");
+        info3.setIphone(4912);
+        info3.setIpad(1969);
+        info3.setItouch(2501);
+
+
+        ChatDataBean.Information info4=new ChatDataBean().new Information();
+        info4.setPeriod("2010 Q4");
+        info4.setIphone(3767);
+        info4.setIpad(3597);
+        info4.setItouch(5689);
+
+
+        ChatDataBean.Information info5= new ChatDataBean().new Information();
+        info5.setPeriod("2011 Q1");
+        info5.setIphone(6810);
+        info5.setIpad(1914);
+        info5.setItouch(2293);
+
+        ChatDataBean.Information info6= new ChatDataBean().new Information();
+        info6.setPeriod("2011 Q2");
+        info6.setIphone(5670);
+        info6.setIpad(4293);
+        info6.setItouch(1881);
+
+        ChatDataBean.Information info7= new ChatDataBean().new Information();
+        info7.setPeriod("2011 Q3");
+        info7.setIphone(4820);
+        info7.setIpad(3795);
+        info7.setItouch(1588);
+
+        ChatDataBean.Information info8= new ChatDataBean().new Information();
+        info8.setPeriod("2011 Q4");
+        info8.setIphone(15073);
+        info8.setIpad(5967);
+        info8.setItouch(5175);
+
+
+        ChatDataBean.Information info9= new ChatDataBean().new Information();
+        info9.setPeriod("2012 Q1");
+        info9.setIphone(10687);
+        info9.setIpad(4460);
+        info9.setItouch(2028);
+
+
+        ChatDataBean.Information info10= new ChatDataBean().new Information();
+        info10.setPeriod("2012 Q2");
+        info10.setIphone(8432);
+        info10.setIpad(5713);
+        info10.setItouch(1791);
+
+        data[1]=info1;
+        data[2]=info2;
+        data[3]=info3;
+        data[4]=info4;
+        data[5]=info5;
+        data[6]=info6;
+        data[7]=info7;
+        data[8]=info8;
+        data[9]=info9;
+        data[10]=info10;
+
+        bean.setData(data);
+        bean.setXkey("period");
+        bean.setYkeys(new String[]{"iphone", "ipad", "itouch"});
+        bean.setLabels(new String[]{"iPhone","iPad","iPod Touch"});
+        bean.setPointSize(2);
+        bean.setHideHover("auto");
+        bean.setResize(true);
+
+        Response response = new Response();
+
+        response.setStatusCode("00");
+        response.setStatusValue("OK");
+        response.setData(bean);
+        return AppUtils.convertToJson(response);
+
     }
 
 
@@ -132,7 +343,7 @@ public class WalletController {
         //getEtherBalanceOfWallet("0x7370ced7bbbfe3424128a8b94cabeb77b883b33b");
     }*/
 
-    public void transferFunds(String password, String path, String fromWallet, String toWallet) throws Exception {
+    public TransactionReceipt doTransaction(String password, String path, String fromWallet, String toWallet, Double amount) throws Exception {
 
         if(web3j==null) {
             web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
@@ -141,7 +352,7 @@ public class WalletController {
         Credentials credentials = WalletUtils.loadCredentials(password, path);
 
         TransactionReceipt transactionReceipt = Transfer.sendFunds(
-                web3j, credentials, toWallet, BigDecimal.valueOf(10), Convert.Unit.ETHER);
+                web3j, credentials, toWallet, BigDecimal.valueOf(amount), Convert.Unit.ETHER);
         System.out.println("transactionReceipt.getBlockNumber(): "+ transactionReceipt.getBlockNumber());
         System.out.println("transactionReceipt.getBlockHash(): "+ transactionReceipt.getBlockHash());
         System.out.println("transactionReceipt.getBlockNumberRaw(): "+ transactionReceipt.getBlockNumberRaw());
@@ -152,6 +363,7 @@ public class WalletController {
         System.out.println("transactionReceipt.getTo(): "+ transactionReceipt.getTo());
         System.out.println("transactionReceipt.getTransactionIndex(): "+ transactionReceipt.getTransactionIndex());
 
+        return transactionReceipt;
 
 /*        // get the next available nonce
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount("0x3749c12f81c188665735e0a87ec0026f637f8f13", DefaultBlockParameterName.LATEST).sendAsync().get();
@@ -168,27 +380,22 @@ public class WalletController {
     }
 
     private String createNewWalletAccount(String walletAlias,String passphrase , long idCustomer) throws Exception {
-//        String fileName = WalletUtils.generateNewWalletFile(passphrase, new File("D:\\BlockChain\\BlockchainUI\\WalletFiles\\"), true);
-        //System.out.println(fileName);
-
-        String fileName = "0xadsfjhadslaklumeluxmcliu1324ujdlfaduj1";
-        String digitStr = fileName.substring(0,fileName.length()-1);
-
-        return fileName;
+        String fileNameOrg = WalletUtils.generateNewWalletFile(passphrase, new File("D:\\BlockChain\\WalletFiles"), true);
+        System.out.println(fileNameOrg);
+        return fileNameOrg;
     }
 
-    public void getEtherBalanceOfWallet(String walletAddress) throws Exception {
+    public EthGetBalance getEtherBalanceOfWallet(String walletAddress) throws Exception {
 
         if(web3j==null) {
             web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
         }
 
         EthGetBalance ethGetBalance = web3j.ethGetBalance(walletAddress, DefaultBlockParameterName.LATEST).sendAsync().get();
-        BigInteger value = ethGetBalance.getBalance();
-        System.out.println("Transaction value: " + Convert.fromWei(String.valueOf(value), Convert.Unit.ETHER) + " Ether (" + value + " Wei)");
+        return ethGetBalance;
     }
 
-    public void getWeiBalanceOfWallet(String walletAddress) throws Exception {
+/*    public void getWeiBalanceOfWallet(String walletAddress) throws Exception {
 
         if(web3j==null) {
             web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
@@ -196,13 +403,13 @@ public class WalletController {
 
         EthGetBalance ethGetBalance = web3j.ethGetBalance(walletAddress, DefaultBlockParameterName.LATEST).sendAsync().get();
         System.out.println("Wei Balance:" + ethGetBalance.getBalance());
-    }
+    }*/
 
     /*public static void main(String[] args) throws Exception {
         new Main().run();
     }*/
 
-    void simpleFilterExample() throws Exception {
+/*    void simpleFilterExample() throws Exception {
 
         if(web3j==null) {
             web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
@@ -288,5 +495,5 @@ public class WalletController {
 
         countDownLatch.await();
         subscription.unsubscribe();
-    }
+    }*/
 }

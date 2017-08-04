@@ -40,4 +40,5 @@ public class Response {
     public void setDataList(List dataList) {
         this.dataList = dataList;
     }
+
 }

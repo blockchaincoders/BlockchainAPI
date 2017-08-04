@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public class WalletServiceImpl implements WalletServiceApi{
+public class WalletServiceImpl implements WalletServiceApi {
 
     @Autowired
     private WalletDaoApi walletDao;
@@ -22,5 +22,11 @@ public class WalletServiceImpl implements WalletServiceApi{
     @Override
     public List<WalletEntity> fetchAllCustomerWallets(Integer idCustomer) {
         return walletDao.fetchAllCustomerWallets(idCustomer);
+    }
+
+    @Transactional
+    @Override
+    public WalletEntity fetchWalletDetails(String walletAlias) {
+        return walletDao.fetchWalletDetails(walletAlias);
     }
 }

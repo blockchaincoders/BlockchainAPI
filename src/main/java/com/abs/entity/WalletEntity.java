@@ -24,6 +24,9 @@ public class WalletEntity {
     @Column(name = "id_customer")
     private Integer idCustomer;
 
+    @Column(name = "WALLET_FILE_NAME")
+    private String walletFileName;
+
     public Integer getId() {
         return id;
     }
@@ -62,5 +65,13 @@ public class WalletEntity {
 
     public void setIdCustomer(Integer idCustomer) {
         this.idCustomer = idCustomer;
+    }
+
+    public String getWalletFileName() {
+        return walletFileName;
+    }
+
+    public void setWalletFileName(String walletFileName) {
+        this.walletFileName = walletFileName;
     }
 }

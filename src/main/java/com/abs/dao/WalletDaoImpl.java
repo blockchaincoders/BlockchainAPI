@@ -21,4 +21,10 @@ public class WalletDaoImpl implements WalletDaoApi {
                 .append(idCustomer).toString();
         return this.sessionFactory.getCurrentSession().createQuery(query).list();
     }
+
+    public WalletEntity fetchWalletDetails(String walletAlias) {
+        String query= new StringBuilder().append("from WalletEntity as we where we.walletAlias = '")
+                .append(walletAlias).append("'").toString();
+        return (WalletEntity) this.sessionFactory.getCurrentSession().createQuery(query).list().get(0);
+    }
 }
