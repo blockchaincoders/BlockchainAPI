@@ -288,16 +288,16 @@ public class WalletController {
         info10.setIpad(5713);
         info10.setItouch(1791);
 
-        data[1]=info1;
-        data[2]=info2;
-        data[3]=info3;
-        data[4]=info4;
-        data[5]=info5;
-        data[6]=info6;
-        data[7]=info7;
-        data[8]=info8;
-        data[9]=info9;
-        data[10]=info10;
+        data[0]=info1;
+        data[1]=info2;
+        data[2]=info3;
+        data[3]=info4;
+        data[4]=info5;
+        data[5]=info6;
+        data[6]=info7;
+        data[7]=info8;
+        data[8]=info9;
+        data[9]=info10;
 
         bean.setData(data);
         bean.setXkey("period");
