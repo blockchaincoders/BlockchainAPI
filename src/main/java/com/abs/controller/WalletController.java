@@ -1,7 +1,8 @@
 package com.abs.controller;
 
+import com.abs.entity.AreaChartBean;
+import com.abs.entity.AreaChartMobileData;
 import com.abs.entity.BlockInfoBean;
-import com.abs.entity.ChatDataBean;
 import com.abs.entity.WalletEntity;
 import com.abs.service.WalletServiceApi;
 import com.abs.utils.AppUtils;
@@ -14,32 +15,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.web3j.crypto.Credentials;
-import org.web3j.crypto.Wallet;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthGetBalance;
-import org.web3j.protocol.core.methods.response.Transaction;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.Transfer;
 import org.web3j.utils.Convert;
-import rx.Observable;
-import rx.Subscription;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 public class WalletController {
@@ -137,6 +128,27 @@ public class WalletController {
 
     @CrossOrigin
     @ResponseBody
+    @RequestMapping(value = "/fetchEthCoinBase", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String fetchEthCoinBase()
+    {
+        Response response = new Response();
+        try {
+            EthCoinbase ethCoinbase = web3j.ethCoinbase().send();
+            response.setData(ethCoinbase.getAddress());
+
+            response.setStatusCode("00");
+            response.setStatusValue("OK");
+
+        }catch (Exception e) {
+            response.setStatusCode("99");
+            response.setStatusValue("Error:"+e.getMessage());
+        }
+        return AppUtils.convertToJson(response);
+    }
+
+
+    @CrossOrigin
+    @ResponseBody
     @RequestMapping(value = "/transferFunds", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
     public String transferFunds(String fromWallet, String toWallet, Double amount)
     {
@@ -219,70 +231,70 @@ public class WalletController {
     @RequestMapping(value = "/fetchGraphData", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
     public String chartData(){
 
-        ChatDataBean bean = new ChatDataBean();
+        AreaChartBean bean = new AreaChartBean();
 
-        bean.setElement("morris-area-chart");
+        bean.setElement("morris-area-chart");//todo this element id can be set from angularjs which is a proper method to set chart div
 
-        ChatDataBean.Information data[]= new ChatDataBean.Information[10];
-        ChatDataBean.Information info1= new ChatDataBean().new Information();
+        AreaChartMobileData data[]= new AreaChartMobileData[10];
+        AreaChartMobileData info1= new AreaChartMobileData();
         info1.setPeriod("2010 Q1");
         info1.setIphone(2666);
         info1.setIpad(null);
         info1.setItouch(2647);
 
-        ChatDataBean.Information info2= new ChatDataBean().new Information();
+        AreaChartMobileData info2= new AreaChartMobileData();
         info2.setPeriod("2010 Q2");
         info2.setIphone(2778);
         info2.setIpad(2294);
         info2.setItouch(2441);
 
-        ChatDataBean.Information info3= new ChatDataBean().new Information();
+        AreaChartMobileData info3= new AreaChartMobileData();
         info3.setPeriod("2010 Q3");
         info3.setIphone(4912);
         info3.setIpad(1969);
         info3.setItouch(2501);
 
 
-        ChatDataBean.Information info4=new ChatDataBean().new Information();
+        AreaChartMobileData info4=new AreaChartMobileData();
         info4.setPeriod("2010 Q4");
         info4.setIphone(3767);
         info4.setIpad(3597);
         info4.setItouch(5689);
 
 
-        ChatDataBean.Information info5= new ChatDataBean().new Information();
+        AreaChartMobileData info5= new AreaChartMobileData();
         info5.setPeriod("2011 Q1");
         info5.setIphone(6810);
         info5.setIpad(1914);
         info5.setItouch(2293);
 
-        ChatDataBean.Information info6= new ChatDataBean().new Information();
+        AreaChartMobileData info6= new AreaChartMobileData();
         info6.setPeriod("2011 Q2");
         info6.setIphone(5670);
         info6.setIpad(4293);
         info6.setItouch(1881);
 
-        ChatDataBean.Information info7= new ChatDataBean().new Information();
+        AreaChartMobileData info7= new AreaChartMobileData();
         info7.setPeriod("2011 Q3");
         info7.setIphone(4820);
         info7.setIpad(3795);
         info7.setItouch(1588);
 
-        ChatDataBean.Information info8= new ChatDataBean().new Information();
+        AreaChartMobileData info8= new AreaChartMobileData();
         info8.setPeriod("2011 Q4");
         info8.setIphone(15073);
         info8.setIpad(5967);
         info8.setItouch(5175);
 
 
-        ChatDataBean.Information info9= new ChatDataBean().new Information();
+        AreaChartMobileData info9= new AreaChartMobileData();
         info9.setPeriod("2012 Q1");
         info9.setIphone(10687);
         info9.setIpad(4460);
         info9.setItouch(2028);
 
 
-        ChatDataBean.Information info10= new ChatDataBean().new Information();
+        AreaChartMobileData info10= new AreaChartMobileData();
         info10.setPeriod("2012 Q2");
         info10.setIphone(8432);
         info10.setIpad(5713);
@@ -300,9 +312,9 @@ public class WalletController {
         data[9]=info10;
 
         bean.setData(data);
-        bean.setXkey("period");
-        bean.setYkeys(new String[]{"iphone", "ipad", "itouch"});
-        bean.setLabels(new String[]{"iPhone","iPad","iPod Touch"});
+        bean.setXkey(AreaChartMobileData.getXKey());
+        bean.setYkeys(AreaChartMobileData.getYKeys());
+        bean.setLabels(AreaChartMobileData.getLabels());
         bean.setPointSize(2);
         bean.setHideHover("auto");
         bean.setResize(true);
@@ -315,7 +327,6 @@ public class WalletController {
         return AppUtils.convertToJson(response);
 
     }
-
 
 
     /*public Main() {

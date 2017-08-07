@@ -1,10 +1,10 @@
 package com.abs.entity;
 
 
-public class ChatDataBean {
+public class AreaChartBean {
 
     String element;
-    Information data[];
+    Object data[];
     String xkey;
     String [] ykeys;
     String [] labels;
@@ -13,44 +13,6 @@ public class ChatDataBean {
     boolean resize;
 
 
-    public class  Information {
-       String period;
-       Integer iphone;
-       Integer ipad;
-       Integer itouch;
-
-        public String getPeriod() {
-            return period;
-        }
-
-        public void setPeriod(String period) {
-            this.period = period;
-        }
-
-        public Integer getIphone() {
-            return iphone;
-        }
-
-        public void setIphone(Integer iphone) {
-            this.iphone = iphone;
-        }
-
-        public Integer getIpad() {
-            return ipad;
-        }
-
-        public void setIpad(Integer ipad) {
-            this.ipad = ipad;
-        }
-
-        public Integer getItouch() {
-            return itouch;
-        }
-
-        public void setItouch(Integer itouch) {
-            this.itouch = itouch;
-        }
-    }
 
     public String getElement() {
         return element;
@@ -58,14 +20,6 @@ public class ChatDataBean {
 
     public void setElement(String element) {
         this.element = element;
-    }
-
-    public Information[] getData() {
-        return data;
-    }
-
-    public void setData(Information[] data) {
-        this.data = data;
     }
 
     public String getXkey() {
@@ -114,5 +68,13 @@ public class ChatDataBean {
 
     public void setResize(boolean resize) {
         this.resize = resize;
+    }
+
+    public Object[] getData() {
+        return data;
+    }
+
+    public void setData(Object[] data) {
+        this.data = data;
     }
 }
