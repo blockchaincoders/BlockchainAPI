@@ -22,9 +22,15 @@ public class WalletDaoImpl implements WalletDaoApi {
         return this.sessionFactory.getCurrentSession().createQuery(query).list();
     }
 
-    public WalletEntity fetchWalletDetails(String walletAlias) {
+    public WalletEntity fetchWalletDetailsByAlias(String walletAlias) {
         String query= new StringBuilder().append("from WalletEntity as we where we.walletAlias = '")
                 .append(walletAlias).append("'").toString();
+        return (WalletEntity) this.sessionFactory.getCurrentSession().createQuery(query).list().get(0);
+    }
+
+    public WalletEntity fetchWalletDetailsByAddress(String walletAddress) {
+        String query= new StringBuilder().append("from WalletEntity as we where we.walletAddress = '")
+                .append(walletAddress).append("'").toString();
         return (WalletEntity) this.sessionFactory.getCurrentSession().createQuery(query).list().get(0);
     }
 }

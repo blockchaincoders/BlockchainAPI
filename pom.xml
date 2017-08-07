@@ -23,6 +23,7 @@
 		<org.springframework.version>4.3.0.RELEASE</org.springframework.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<quartz.version>2.2.1</quartz.version>
 	</properties>
   <dependencies>
     <dependency>
@@ -39,6 +40,13 @@
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-core</artifactId>
 	  <version>${org.springframework.version}</version>
+	</dependency>
+
+	  <!-- Quartz framework -->
+	<dependency>
+	 <groupId>org.quartz-scheduler</groupId>
+	 <artifactId>quartz</artifactId>
+	 <version>${quartz.version}</version>
 	</dependency>
 	 
 	<!--

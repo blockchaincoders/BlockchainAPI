@@ -8,5 +8,6 @@ public interface WalletDaoApi {
 
     void createWallet(WalletEntity entity);
     List<WalletEntity> fetchAllCustomerWallets(Integer idCustomer);
-    public WalletEntity fetchWalletDetails(String walletAlias);
+    public WalletEntity fetchWalletDetailsByAlias(String walletAlias);
+    public WalletEntity fetchWalletDetailsByAddress(String walletAddress);
 }

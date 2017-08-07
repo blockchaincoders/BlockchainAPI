@@ -133,6 +133,11 @@ public class WalletController {
     {
         Response response = new Response();
         try {
+
+            if(web3j==null) {
+                web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
+            }
+
             EthCoinbase ethCoinbase = web3j.ethCoinbase().send();
             response.setData(ethCoinbase.getAddress());
 
@@ -146,6 +151,39 @@ public class WalletController {
         return AppUtils.convertToJson(response);
     }
 
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/transferEthCoinBaseFunds", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String transferEthCoinBaseFunds(String fromWallet, String toWallet, Double amount)
+    {
+        Response response = new Response();
+        try {
+
+            //WalletEntity walletEntity = walletService.fetchWalletDetailsByAddress(fromWallet);
+            WalletEntity toWalletEntity = null;
+            if (toWallet.startsWith("0x")) {
+                toWalletEntity = walletService.fetchWalletDetailsByAddress(toWallet);
+            } else {
+                toWalletEntity = walletService.fetchWalletDetailsByAlias(toWallet);
+            }
+
+            String path = "D:\\BlockChain\\WalletFiles\\UTC--2017-07-05T14-19-25.959868494Z--4f6010998355b67f4fa5541e70a9d1b273bbb2c2";//+ walletEntity.getWalletFileName();
+            String walletPassphrase = "Lahore123456";
+
+            TransactionReceipt transactionReceipt = doTransaction(walletPassphrase, path, fromWallet, toWalletEntity.getWalletAddress(), amount);
+            response.setData(transactionReceipt);
+
+            response.setStatusCode("00");
+            response.setStatusValue("OK");
+
+        }catch (Exception e) {
+            response.setStatusCode("99");
+            response.setStatusValue("Error:"+e.getMessage());
+        }
+        return AppUtils.convertToJson(response);
+    }
+
+
 
     @CrossOrigin
     @ResponseBody
@@ -155,8 +193,8 @@ public class WalletController {
         Response response = new Response();
         try {
 
-            WalletEntity walletEntity = walletService.fetchWalletDetails(fromWallet);
-            WalletEntity toWalletEntity = walletService.fetchWalletDetails(toWallet);
+            WalletEntity walletEntity = walletService.fetchWalletDetailsByAlias(fromWallet);
+            WalletEntity toWalletEntity = walletService.fetchWalletDetailsByAlias(toWallet);
 
             String path = "D:\\BlockChain\\WalletFiles\\"+ walletEntity.getWalletFileName();
             String walletPassphrase = walletEntity.getWalletPassphrase();

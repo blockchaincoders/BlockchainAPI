@@ -26,7 +26,13 @@ public class WalletServiceImpl implements WalletServiceApi {
 
     @Transactional
     @Override
-    public WalletEntity fetchWalletDetails(String walletAlias) {
-        return walletDao.fetchWalletDetails(walletAlias);
+    public WalletEntity fetchWalletDetailsByAlias(String walletAlias) {
+        return walletDao.fetchWalletDetailsByAlias(walletAlias);
+    }
+
+    @Transactional
+    @Override
+    public WalletEntity fetchWalletDetailsByAddress(String walletAddress) {
+        return walletDao.fetchWalletDetailsByAddress(walletAddress);
     }
 }
