@@ -63,11 +63,13 @@
     <!--DAO Entries-->
     <bean id="customerDao" class="com.abs.dao.CustomerDaoImpl"></bean>
     <bean id="walletDao" class="com.abs.dao.WalletDaoImpl"></bean>
+    <bean id="blockInfoDao" class="com.abs.dao.BlockInfoDaoImpl"></bean>
     <!--DAO Entries End-->
 
     <!--Service Entries-->
     <bean id="customerService" class="com.abs.service.CustomerServiceImpl"></bean>
     <bean id="walletService" class="com.abs.service.WalletServiceImpl"></bean>
+    <bean id="blockInfoService" class="com.abs.service.BlockInfoServiceImpl"></bean>
     <!--Service Entries End-->
 
     <tx:annotation-driven />
