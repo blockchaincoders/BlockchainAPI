@@ -14,14 +14,17 @@ public class BlockInfoDaoImpl implements BlockInfoDaoApi {
 
     @Override
     public void createBlockInfo(BlockInfoEntity entity) {
-        this.sessionFactory.getCurrentSession().save(entity);
+        this.sessionFactory.getCurrentSession().saveOrUpdate(entity);
     }
 
     public List<BlockInfoEntity> fetchBlockInfoSet() {
+        String queryCount= new StringBuilder().append("select count(*) from BlockInfoEntity as we ").append("").toString();
+        long hQueryCount = (long) this.sessionFactory.getCurrentSession().createQuery(queryCount).uniqueResult();
+
         String query= new StringBuilder().append("from BlockInfoEntity as we ").append("").toString();
         Query hQuery = this.sessionFactory.getCurrentSession().createQuery(query);
-        hQuery.setFirstResult(0);
-        hQuery.setMaxResults(10);
+        hQuery.setFirstResult((int)hQueryCount - 10);
+        hQuery.setMaxResults((int)hQueryCount);
         return hQuery.list();
     }
 

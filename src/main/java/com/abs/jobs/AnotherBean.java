@@ -5,7 +5,11 @@ package com.abs.jobs;
  */
 
 import com.abs.entity.BlockInfoBean;
+import com.abs.entity.BlockInfoEntity;
+import com.abs.service.BlockInfoServiceApi;
+import com.abs.utils.AppUtils;
 import com.abs.utils.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
@@ -19,6 +23,11 @@ import java.util.List;
 @Component("anotherBean")
 public class AnotherBean {
 
+    @Autowired
+    private BlockInfoServiceApi blockInfoService;
+
+    private static String blockNumber;
+
     private Web3j web3j;
 
     public void printAnotherMessage(){
@@ -30,33 +39,31 @@ public class AnotherBean {
                 web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
             }
 
+            BlockInfoEntity entity = null;
             EthBlock.Block block = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf("latest"), true).send().getBlock();
 
-            BlockInfoBean blockInfoBean = new BlockInfoBean();
-            blockInfoBean.setNumber(block.getNumber().toString());
-            blockInfoBean.setHash(block.getHash());
-            blockInfoBean.setParentHash(block.getParentHash());
-            blockInfoBean.setTransactionSize(String.valueOf(block.getTransactions().size()));
-            blockInfoBean.setTransactionsRoot(block.getTransactionsRoot());
-            blockInfoBean.setTimeStamp(Instant.ofEpochSecond(block.getTimestamp().longValueExact()).atZone(ZoneId.of("UTC")).toLocalDateTime().toString());
-            blockInfoBean.setMiner(block.getMiner());
-            blockInfoBean.setExtraData(block.getExtraData());
-            blockInfoBean.setNonceRaw(block.getNonceRaw());
-            blockInfoBean.setDifficulty(block.getDifficulty().toString());
-            blockInfoBean.setGasLimit(block.getGasLimit().toString());
-            blockInfoBean.setLogsBloom(block.getLogsBloom());
-            blockInfoBean.setGasUsed(block.getGasUsed().toString());
-            blockInfoBean.setMixHash(block.getMixHash());
-            blockInfoBean.setReceiptsRoot(block.getReceiptsRoot());
-            blockInfoBean.setSizeRaw(block.getSizeRaw());
-
-            List<EthBlock.TransactionResult> transactionResults = block.getTransactions();
-            for (int i=0; i< transactionResults.size(); i++) {
-                EthBlock.TransactionResult transactionResult = transactionResults.get(i);
-                blockInfoBean.getTransactionResults().add(transactionResult.get().toString());
+            if (block.getNumber().toString().equals(blockNumber)) {
+                return;
             }
 
-            response.setData(blockInfoBean);
+            blockNumber = block.getNumber().toString();
+            //create Block Info entity
+            entity = new BlockInfoEntity();
+            entity.setNumber(block.getNumber().toString());
+            entity.setTransactionSize(String.valueOf(block.getTransactions().size()));
+            entity.setHash(block.getHash());
+            entity.setParentHash(block.getParentHash());
+            entity.setNonceRaw(block.getNonceRaw());
+            entity.setTimeStamp(Instant.ofEpochSecond(block.getTimestamp().longValueExact()).atZone(ZoneId.of("UTC")).toLocalDateTime().toString());
+            entity.setMiner(block.getMiner());
+            entity.setDifficulty(block.getDifficulty().toString());
+            entity.setGasLimit(block.getGasLimit().toString());
+            entity.setGasUsed(block.getGasUsed().toString());
+            //entity creation ends
+
+
+            blockInfoService.createBlockInfo(entity);
+
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
@@ -65,13 +72,25 @@ public class AnotherBean {
             response.setStatusValue("Error:"+e.getMessage());
         }
 
-
-
-
-
-
-
         System.out.println("Job Ended");
     }
+
+
+    public BlockInfoServiceApi getBlockInfoService() {
+        return blockInfoService;
+    }
+
+    public void setBlockInfoService(BlockInfoServiceApi blockInfoService) {
+        this.blockInfoService = blockInfoService;
+    }
+
+    public Web3j getWeb3j() {
+        return web3j;
+    }
+
+    public void setWeb3j(Web3j web3j) {
+        this.web3j = web3j;
+    }
+
 
 }
