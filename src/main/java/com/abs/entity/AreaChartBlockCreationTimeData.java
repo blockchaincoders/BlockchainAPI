@@ -1,9 +1,9 @@
 package com.abs.entity;
 
-public class BarChartBlockDifficultyData {
+public class AreaChartBlockCreationTimeData {
 
     String blockNo;
-    int difficultyLevel;
+    String creationTime;
 
     public String getBlockNo() {
         return blockNo;
@@ -13,12 +13,12 @@ public class BarChartBlockDifficultyData {
         this.blockNo = blockNo;
     }
 
-    public int getDifficultyLevel() {
-        return difficultyLevel;
+    public String getCreationTime() {
+        return creationTime;
     }
 
-    public void setDifficultyLevel(int difficultyLevel) {
-        this.difficultyLevel = difficultyLevel;
+    public void setCreationTime(String creationTime) {
+        this.creationTime = creationTime;
     }
 
     public static String getXKey(){
@@ -26,10 +26,10 @@ public class BarChartBlockDifficultyData {
     }
 
     public static String [] getYKeys(){
-        return new String[]{"difficultyLevel"};
+        return new String[]{"creationTime"};
     }
 
     public static String [] getLabels(){
-        return new String[]{"Difficulty Level"};
+        return new String[]{"Block Creation Time"};
     }
 }

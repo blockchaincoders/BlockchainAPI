@@ -17,10 +17,13 @@ import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.http.HttpService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @Controller
 public class BlockInfoController {
@@ -83,42 +86,53 @@ public class BlockInfoController {
             List<BlockInfoEntity> blockInfoEntityList = blockInfoService.fetchBlockInfoSet();
 
             //main chart list
-            List<BarChartBean> barChartBeanList= new ArrayList<>();
+            List<Object> chartBeanList= new ArrayList<>();
 
             //bar chart beans
-            BarChartBean blockDifficultyBarChart = new BarChartBean();
             BarChartBean blockTxnBarChart = new BarChartBean();
 
+            //create area chart
+            AreaChartBean blockDifficultyChart = new AreaChartBean();
+            AreaChartBean blockCreationTimeChart=new AreaChartBean();
+
             //setting card div id's
-            blockDifficultyBarChart.setElement("block-difficulty-bar-chart");
+            blockCreationTimeChart.setElement("block-creation-time-area-chart");
+            blockDifficultyChart.setElement("block-difficulty-bar-chart");
             blockTxnBarChart.setElement("block-txn-cont-bar-chart");
 
             //creating data list to populate the data[] in the bar chart
-            List<BarChartBlockDifficultyData> barChartBlockDifficultyBeansData= new ArrayList<>();
             List<BarChartBlockTxnCountData> barChartBlockTxnCountDataData = new ArrayList<>();
 
+            List<AreaChartBlockDifficultyData> areaChartBlockDifficultyBeansData= new ArrayList<>();
+            List<AreaChartBlockCreationTimeData> areaChartBlockCreationTimeData=new ArrayList<>();
+
+            Date lastBlockCreationTime=null;
             //parse the data to the appropriate beans
             for(BlockInfoEntity entity: blockInfoEntityList){
 
-                BarChartBlockDifficultyData blockDifficultyBean= new BarChartBlockDifficultyData();
                 BarChartBlockTxnCountData blockTxnBean= new BarChartBlockTxnCountData();
-
-                blockDifficultyBean.setBlockNo(entity.getNumber());
-                blockDifficultyBean.setDifficultyLevel(Integer.parseInt(entity.getDifficulty()));
-                barChartBlockDifficultyBeansData.add(blockDifficultyBean);
 
                 blockTxnBean.setBlockNo(entity.getNumber());
                 blockTxnBean.setTxnCount(Integer.parseInt(entity.getTransactionSize()));
                 barChartBlockTxnCountDataData.add(blockTxnBean);
-            }
 
-            //set data of blockDifficultyBarChart
-            blockDifficultyBarChart.setData(barChartBlockDifficultyBeansData.toArray());
-            blockDifficultyBarChart.setXkey(BarChartBlockDifficultyData.getXKey());
-            blockDifficultyBarChart.setYkeys(BarChartBlockDifficultyData.getYKeys());
-            blockDifficultyBarChart.setLabels(BarChartBlockDifficultyData.getLabels());
-            blockDifficultyBarChart.setHideHover("auto");
-            blockDifficultyBarChart.setResize(true);
+                //creating dummy data
+                AreaChartBlockDifficultyData blockDifficultyBean= new AreaChartBlockDifficultyData();
+                blockDifficultyBean.setBlockNo(entity.getNumber());
+                blockDifficultyBean.setDifficultyLevel(Integer.parseInt(entity.getDifficulty()));
+                areaChartBlockDifficultyBeansData.add(blockDifficultyBean);
+
+                AreaChartBlockCreationTimeData blockCreationTimeBean=new AreaChartBlockCreationTimeData();
+                blockCreationTimeBean.setBlockNo(entity.getNumber());
+
+                Date currentDummyCreationTime=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(entity.getTimeStamp());
+
+                blockCreationTimeBean.setCreationTime(lastBlockCreationTime!=null?""+((currentDummyCreationTime.getTime()-lastBlockCreationTime.getTime())/1000):"0");
+                areaChartBlockCreationTimeData.add(blockCreationTimeBean);
+
+                lastBlockCreationTime=currentDummyCreationTime;
+                //area charts creation ends
+            }
 
             //set data of blockTxnBarChart
             blockTxnBarChart.setData(barChartBlockTxnCountDataData.toArray());
@@ -128,14 +142,36 @@ public class BlockInfoController {
             blockTxnBarChart.setHideHover("auto");
             blockTxnBarChart.setResize(true);
 
-            //add to bar char list
-            barChartBeanList.add(blockDifficultyBarChart);
-            barChartBeanList.add(blockTxnBarChart);
+
+            //set data of blockDifficultyBarChart
+            blockDifficultyChart.setData(areaChartBlockDifficultyBeansData.toArray());
+            blockDifficultyChart.setXkey(AreaChartBlockDifficultyData.getXKey());
+            blockDifficultyChart.setYkeys(AreaChartBlockDifficultyData.getYKeys());
+            blockDifficultyChart.setLabels(AreaChartBlockDifficultyData.getLabels());
+            blockDifficultyChart.setHideHover("auto");
+            blockDifficultyChart.setResize(true);
+            blockDifficultyChart.setPointSize(2);
+
+            blockCreationTimeChart.setData(areaChartBlockCreationTimeData.toArray());
+            blockCreationTimeChart.setXkey(AreaChartBlockCreationTimeData.getXKey());
+            blockCreationTimeChart.setYkeys(AreaChartBlockCreationTimeData.getYKeys());
+            blockCreationTimeChart.setLabels(AreaChartBlockCreationTimeData.getLabels());
+            blockCreationTimeChart.setHideHover("auto");
+            blockCreationTimeChart.setResize(true);
+            blockCreationTimeChart.setPointSize(2);
+
+            //add to chart list 0
+            chartBeanList.add(blockDifficultyChart);
+            //1
+            chartBeanList.add(blockTxnBarChart);
+            //2
+            chartBeanList.add(blockCreationTimeChart);
+
 
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-            response.setData(barChartBeanList);
+            response.setData(chartBeanList);
 
         }catch (Exception e) {
             response.setStatusCode("99");
