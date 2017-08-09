@@ -7,6 +7,7 @@ public class Response {
     private String statusCode;
     private String statusValue;
     private Object data;
+    private Object[] dataArray;
     private List dataList;
 
     public String getStatusCode() {
@@ -41,4 +42,11 @@ public class Response {
         this.dataList = dataList;
     }
 
+    public Object[] getDataArray() {
+        return dataArray;
+    }
+
+    public void setDataArray(Object[] dataArray) {
+        this.dataArray = dataArray;
+    }
 }

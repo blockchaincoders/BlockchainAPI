@@ -1,7 +1,6 @@
 package com.abs.controller;
 
-import com.abs.entity.BlockInfoBean;
-import com.abs.entity.BlockInfoEntity;
+import com.abs.entity.*;
 import com.abs.service.BlockInfoServiceApi;
 import com.abs.utils.AppUtils;
 import com.abs.utils.Constant;
@@ -12,25 +11,15 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.web3j.crypto.Credentials;
-import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthCoinbase;
-import org.web3j.protocol.core.methods.response.EthGetBalance;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.Transfer;
-import org.web3j.utils.Convert;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -86,16 +75,67 @@ public class BlockInfoController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/fetchBlockInfoSet", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    @RequestMapping(value = "/fetchBlockInfoChartsData", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
     public String fetchBlockInfoSet(HttpServletRequest request)
     {
         Response response = new Response();
         try {
             List<BlockInfoEntity> blockInfoEntityList = blockInfoService.fetchBlockInfoSet();
 
-            response.setDataList(blockInfoEntityList);
+            //main chart list
+            List<BarChartBean> barChartBeanList= new ArrayList<>();
+
+            //bar chart beans
+            BarChartBean blockDifficultyBarChart = new BarChartBean();
+            BarChartBean blockTxnBarChart = new BarChartBean();
+
+            //setting card div id's
+            blockDifficultyBarChart.setElement("block-difficulty-bar-chart");
+            blockTxnBarChart.setElement("block-txn-cont-bar-chart");
+
+            //creating data list to populate the data[] in the bar chart
+            List<BarChartBlockDifficultyData> barChartBlockDifficultyBeansData= new ArrayList<>();
+            List<BarChartBlockTxnCountData> barChartBlockTxnCountDataData = new ArrayList<>();
+
+            //parse the data to the appropriate beans
+            for(BlockInfoEntity entity: blockInfoEntityList){
+
+                BarChartBlockDifficultyData blockDifficultyBean= new BarChartBlockDifficultyData();
+                BarChartBlockTxnCountData blockTxnBean= new BarChartBlockTxnCountData();
+
+                blockDifficultyBean.setBlockNo(entity.getNumber());
+                blockDifficultyBean.setDifficultyLevel(Integer.parseInt(entity.getDifficulty()));
+                barChartBlockDifficultyBeansData.add(blockDifficultyBean);
+
+                blockTxnBean.setBlockNo(entity.getNumber());
+                blockTxnBean.setTxnCount(Integer.parseInt(entity.getTransactionSize()));
+                barChartBlockTxnCountDataData.add(blockTxnBean);
+            }
+
+            //set data of blockDifficultyBarChart
+            blockDifficultyBarChart.setData(barChartBlockDifficultyBeansData.toArray());
+            blockDifficultyBarChart.setXkey(BarChartBlockDifficultyData.getXKey());
+            blockDifficultyBarChart.setYkeys(BarChartBlockDifficultyData.getYKeys());
+            blockDifficultyBarChart.setLabels(BarChartBlockDifficultyData.getLabels());
+            blockDifficultyBarChart.setHideHover("auto");
+            blockDifficultyBarChart.setResize(true);
+
+            //set data of blockTxnBarChart
+            blockTxnBarChart.setData(barChartBlockTxnCountDataData.toArray());
+            blockTxnBarChart.setXkey(BarChartBlockTxnCountData.getXKey());
+            blockTxnBarChart.setYkeys(BarChartBlockTxnCountData.getYKeys());
+            blockTxnBarChart.setLabels(BarChartBlockTxnCountData.getLabels());
+            blockTxnBarChart.setHideHover("auto");
+            blockTxnBarChart.setResize(true);
+
+            //add to bar char list
+            barChartBeanList.add(blockDifficultyBarChart);
+            barChartBeanList.add(blockTxnBarChart);
+
             response.setStatusCode("00");
             response.setStatusValue("OK");
+
+            response.setData(barChartBeanList);
 
         }catch (Exception e) {
             response.setStatusCode("99");
