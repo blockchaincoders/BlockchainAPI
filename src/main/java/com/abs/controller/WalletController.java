@@ -1,9 +1,7 @@
 package com.abs.controller;
 
-import com.abs.entity.AreaChartBean;
-import com.abs.entity.AreaChartMobileData;
-import com.abs.entity.BlockInfoBean;
-import com.abs.entity.WalletEntity;
+import com.abs.entity.*;
+import com.abs.service.TransactionHistoryServiceApi;
 import com.abs.service.WalletServiceApi;
 import com.abs.utils.AppUtils;
 import com.abs.utils.Constant;
@@ -37,6 +35,8 @@ public class WalletController {
 
     @Autowired
     private WalletServiceApi walletService;
+    @Autowired
+    private TransactionHistoryServiceApi transactionHistoryService;
 
     private static final int COUNT = 10;
     private Web3j web3j;
@@ -188,27 +188,63 @@ public class WalletController {
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/transferFunds", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String transferFunds(String fromWallet, String toWallet, Double amount)
+    public String transferFunds(HttpServletRequest request,String fromWallet, String toWallet, Double amount)
     {
         Response response = new Response();
+        WalletEntity fromWalletEntity=null;
+        WalletEntity toWalletEntity=null;
+//        Integer idCustomer=null;
         try {
 
-            WalletEntity walletEntity = walletService.fetchWalletDetailsByAlias(fromWallet);
-            WalletEntity toWalletEntity = walletService.fetchWalletDetailsByAlias(toWallet);
+            //			Integer idCustomer =Integer.valueOf(183);
+           /* todo add the check for session customer id and fromwallet customer id
+           Integer idCustomer = request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY)!=null
+                    ?(Integer)request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY):null ;*/
 
-            String path = "D:\\BlockChain\\WalletFiles\\"+ walletEntity.getWalletFileName();
-            String walletPassphrase = walletEntity.getWalletPassphrase();
+            fromWalletEntity = walletService.fetchWalletDetailsByAlias(fromWallet);
+            toWalletEntity = walletService.fetchWalletDetailsByAlias(toWallet);
+
+            String path = "D:\\BlockChain\\WalletFiles\\"+ fromWalletEntity.getWalletFileName();
+            String walletPassphrase = fromWalletEntity.getWalletPassphrase();
 
             TransactionReceipt transactionReceipt = doTransaction(walletPassphrase, path, fromWallet, toWalletEntity.getWalletAddress(), amount);
+
+
+            TransactionHistoryEntity entity=new TransactionHistoryEntity();
+            entity.setFromAccAlias(fromWallet);
+            entity.setFromAccAddress(fromWalletEntity.getWalletAddress());
+            entity.setToAccAlias(toWallet);
+            entity.setToAccAddress(toWalletEntity.getWalletAddress());
+            entity.setTxnFee("0");
+            entity.setTxnStatus("00");
+//            entity.setTxnId();
+            entity.setCustomerId(fromWalletEntity.getIdCustomer());
+            entity.setTxnAmount(amount.toString());
+            transactionHistoryService.addTxnHistory(entity);
+
             response.setData(transactionReceipt);
 
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
         }catch (Exception e) {
+
+            TransactionHistoryEntity entity=new TransactionHistoryEntity();
+            entity.setFromAccAlias(fromWallet);
+            entity.setFromAccAddress(fromWalletEntity.getWalletAddress());
+            entity.setToAccAlias(toWallet);
+            entity.setToAccAddress(toWalletEntity.getWalletAddress());
+            entity.setTxnFee("0");
+            entity.setTxnStatus("00");
+//            entity.setTxnId();
+            entity.setCustomerId(fromWalletEntity.getIdCustomer());
+            entity.setTxnAmount(amount.toString());
+
             response.setStatusCode("99");
             response.setStatusValue("Error:"+e.getMessage());
+            transactionHistoryService.addTxnHistory(entity);
         }
+
         return AppUtils.convertToJson(response);
     }
 

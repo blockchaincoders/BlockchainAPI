@@ -1,9 +1,12 @@
 package com.abs.controller;
 
 import com.abs.entity.TransactionHistory;
+import com.abs.entity.TransactionHistoryEntity;
+import com.abs.service.TransactionHistoryServiceApi;
 import com.abs.utils.AppUtils;
 import com.abs.utils.Constant;
 import com.abs.utils.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +21,9 @@ import java.util.Random;
 @Controller
 public class TransactionController {
 
+    @Autowired
+    private TransactionHistoryServiceApi transactionHistoryService;
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/fetchTxnHistory", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
@@ -25,15 +31,20 @@ public class TransactionController {
 
         Response response = new Response();
         try {
+            Integer idCustomer =(Integer) request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY);
+//			Integer idCustomer =Integer.valueOf(183);
+
+            List<TransactionHistoryEntity> entityList=transactionHistoryService.fetchAllTxnHistoryByCustomerId(idCustomer);
 
             List<TransactionHistory> txnHistory=new ArrayList<>();
 
-            for(int i=0; i<=10; i++){
+            for(TransactionHistoryEntity entity:entityList){
+
                 TransactionHistory txn=new TransactionHistory();
-                txn.setTxnType("Funds Transfer");
-                txn.setFromAccAlias("Hass"+new Random().nextInt(10));
-                txn.setToAccAlias("Ali"+new Random().nextInt(10));
-                txn.setAmount("1");
+                txn.setFromAccAlias(entity.getFromAccAlias());
+                txn.setToAccAlias(entity.getToAccAlias());
+                txn.setAmount(entity.getTxnAmount());
+                txn.setTxnDate(entity.getTxnDate().toString());
                 txnHistory.add(txn);
             }
 
@@ -46,4 +57,6 @@ public class TransactionController {
         }
         return AppUtils.convertToJson(response);
     }
+
+
 }

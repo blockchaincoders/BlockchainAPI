@@ -2,17 +2,17 @@ package com.abs.entity;
 
 public class TransactionHistory {
 
-    String txnType;
+    String txnDate;
     String fromAccAlias;
     String toAccAlias;
     String amount;
 
-    public String getTxnType() {
-        return txnType;
+    public String getTxnDate() {
+        return txnDate;
     }
 
-    public void setTxnType(String txnType) {
-        this.txnType = txnType;
+    public void setTxnDate(String txnDate) {
+        this.txnDate = txnDate;
     }
 
     public String getFromAccAlias() {
