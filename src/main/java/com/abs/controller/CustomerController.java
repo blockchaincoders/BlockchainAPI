@@ -1,6 +1,7 @@
 package com.abs.controller;
 
 import com.abs.entity.CustomerEntity;
+import com.abs.entity.UserProfileBean;
 import com.abs.service.CustomerServiceApi;
 import com.abs.utils.AppUtils;
 import com.abs.utils.Constant;
@@ -85,6 +86,44 @@ public class CustomerController {
 					break;
 				}
 
+				response.setStatusCode("00");
+				response.setStatusValue("OK");
+			}else{
+				response.setStatusCode("420");
+				response.setStatusValue("Username/Password invalid");
+			}
+		}catch (Exception e) {
+			response.setStatusCode("99");
+			response.setStatusValue("Error:"+e.getMessage());
+		}
+		return AppUtils.convertToJson(response);
+	}
+
+	@CrossOrigin
+	@ResponseBody
+	@RequestMapping(value = "/fetchUserProfile", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+	public String fetchUserCustomerProfile(HttpServletRequest request)
+	{
+		Response response = new Response();
+		try {
+
+			Integer idCustomer =(Integer) request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY);
+//			Integer idCustomer =Integer.valueOf(183);
+
+			CustomerEntity customerEntity= customerService.fetchCustomerById(idCustomer);
+			if(customerEntity!=null){
+
+				//create user profile
+				UserProfileBean userProfile=new UserProfileBean();
+				userProfile.setFirstName(customerEntity.getFirstname());
+				userProfile.setLastName(customerEntity.getLastname());
+				userProfile.setEmail(customerEntity.getEmail());
+				userProfile.setAddress("Lahore");//todo change the customer entity add address city country
+				userProfile.setCity_or_town("Johar Town");
+				userProfile.setCountry("Pakistan");
+				userProfile.setUserName(customerEntity.getUserName());
+
+				response.setData(userProfile);
 				response.setStatusCode("00");
 				response.setStatusValue("OK");
 			}else{

@@ -12,7 +12,7 @@ import com.abs.entity.CustomerEntity;
 public class CustomerDaoImpl implements CustomerDaoApi {
 
 	@Autowired
-    private SessionFactory sessionFactory;
+	private SessionFactory sessionFactory;
 
 	public void addCustomer(CustomerEntity customer) {
 		this.sessionFactory.getCurrentSession().save(customer);
@@ -26,9 +26,9 @@ public class CustomerDaoImpl implements CustomerDaoApi {
 	public void deleteCustomer(Integer customerId) {
 		CustomerEntity customer = (CustomerEntity) sessionFactory.getCurrentSession().load(
 				CustomerEntity.class, customerId);
-        if (null != customer) {
-        	this.sessionFactory.getCurrentSession().delete(customer);
-        }
+		if (null != customer) {
+			this.sessionFactory.getCurrentSession().delete(customer);
+		}
 	}
 
 	public List<CustomerEntity> fetchCustomerByUsernamePassword(String username, String password) {
@@ -36,6 +36,14 @@ public class CustomerDaoImpl implements CustomerDaoApi {
 				.append("from CustomerEntity as ce where ce.userName = '").append(username)
 				.append("'").append(" and ce.password = '").append(password).append("'").toString();
 		return this.sessionFactory.getCurrentSession().createQuery(query).list();
+
+	}
+
+	public CustomerEntity fetchCustomerById(Integer customerId){
+		String query=new StringBuilder()
+				.append("from CustomerEntity as ce where ce.id = ").append(customerId).toString();
+		List<CustomerEntity> customerEntityList = this.sessionFactory.getCurrentSession().createQuery(query).list();
+		return customerEntityList.get(0);
 
 	}
 }

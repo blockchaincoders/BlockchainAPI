@@ -9,4 +9,5 @@ public interface CustomerServiceApi {
     List<CustomerEntity> getAllCustomers();
     void deleteCustomer(Integer CustomerId);
     List<CustomerEntity> verifyCustomer(String username, String password);
+    CustomerEntity fetchCustomerById(Integer customerId);
 }

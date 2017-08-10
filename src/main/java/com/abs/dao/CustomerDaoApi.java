@@ -11,4 +11,5 @@ public interface CustomerDaoApi
     List<CustomerEntity> getAllCustomers();
     void deleteCustomer(Integer customerId);
     List<CustomerEntity> fetchCustomerByUsernamePassword(String username , String password);
+    CustomerEntity fetchCustomerById(Integer customerId);
 }
