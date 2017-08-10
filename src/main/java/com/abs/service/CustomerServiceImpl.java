@@ -41,6 +41,13 @@ public class CustomerServiceImpl implements CustomerServiceApi {
 		return customerDao.fetchCustomerById(customerId);
 	}
 
+	@Transactional
+	public int updatePassword(Integer customerId,String newPass){
+
+		return customerDao.updatePassword(customerId,newPass);
+	}
+
+
 	public void setPersistenceDaoApi(CustomerDaoApi persistenceDao) {
 		this.customerDao = persistenceDao;
 	}

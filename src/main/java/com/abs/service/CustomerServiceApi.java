@@ -10,4 +10,5 @@ public interface CustomerServiceApi {
     void deleteCustomer(Integer CustomerId);
     List<CustomerEntity> verifyCustomer(String username, String password);
     CustomerEntity fetchCustomerById(Integer customerId);
+    int updatePassword(Integer customerId,String newPass);
 }

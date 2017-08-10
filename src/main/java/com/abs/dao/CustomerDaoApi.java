@@ -12,4 +12,5 @@ public interface CustomerDaoApi
     void deleteCustomer(Integer customerId);
     List<CustomerEntity> fetchCustomerByUsernamePassword(String username , String password);
     CustomerEntity fetchCustomerById(Integer customerId);
+    public int updatePassword(Integer customerId,String newPass);
 }

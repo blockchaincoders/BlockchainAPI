@@ -137,6 +137,38 @@ public class CustomerController {
 		return AppUtils.convertToJson(response);
 	}
 
+@CrossOrigin
+	@ResponseBody
+	@RequestMapping(value = "/changePassword", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+	public String changeCustomerPassword(HttpServletRequest request,String oldPass,String newPass)
+	{
+		Response response = new Response();
+		try {
+
+			Integer idCustomer =(Integer) request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY);
+//			Integer idCustomer =Integer.valueOf(183);
+
+			CustomerEntity customerEntity= customerService.fetchCustomerById(idCustomer);
+			if(customerEntity!=null && customerEntity.getPassword().equals(oldPass)){
+
+				if(customerService.updatePassword(idCustomer,newPass)>0){
+					response.setStatusCode("00");
+					response.setStatusValue("OK");
+				}else{
+					response.setStatusCode("420");
+					response.setStatusValue("Error while updating password");
+				}
+			}else{
+				response.setStatusCode("420");
+				response.setStatusValue("Username/Password invalid");
+			}
+		}catch (Exception e) {
+			response.setStatusCode("99");
+			response.setStatusValue("Error:"+e.getMessage());
+		}
+		return AppUtils.convertToJson(response);
+	}
+
 
 	/*public void setCustomerService(CustomerServiceApi customerService) {
 		this.customerService = customerService;

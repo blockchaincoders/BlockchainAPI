@@ -46,4 +46,13 @@ public class CustomerDaoImpl implements CustomerDaoApi {
 		return customerEntityList.get(0);
 
 	}
+
+	@Override
+	public int updatePassword(Integer customerId,String newPass) {
+		String query=new StringBuilder()
+				.append("update CustomerEntity as ce set ce.password='").append(newPass)
+				.append("' where ce.id = ").append(customerId).toString();
+		int updateRecCount = this.sessionFactory.getCurrentSession().createQuery(query).executeUpdate();
+		return updateRecCount;
+	}
 }
