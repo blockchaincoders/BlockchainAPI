@@ -13,10 +13,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthGetBlockTransactionCountByNumber;
+import org.web3j.protocol.core.methods.response.EthTransaction;
+import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -172,6 +177,46 @@ public class BlockInfoController {
             response.setStatusValue("OK");
 
             response.setData(chartBeanList);
+
+        }catch (Exception e) {
+            response.setStatusCode("99");
+            response.setStatusValue("Error:"+e.getMessage());
+        }
+        return AppUtils.convertToJson(response);
+    }
+
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/getBlockDetails", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String getBlockDetails(long blockNumber)
+    {
+        Response response = new Response();
+        try {
+            if(web3j==null) {
+                web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
+            }
+
+            List<Transaction> transactions = new ArrayList<Transaction>();
+            long i = 0l;
+            while (true) {
+                try {
+
+                    BigInteger index = BigInteger.valueOf(i);
+                    EthTransaction ethTransaction = web3j.ethGetTransactionByBlockNumberAndIndex(
+                            DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), index).send();
+                    System.out.println(ethTransaction.getTransaction().isPresent());
+                    Transaction transaction = ethTransaction.getTransaction().get();
+                    transactions.add(transaction);
+                    i=i+1;
+                } catch (Exception e) {
+                    break;
+                }
+            }
+            response.setData(transactions);
+
+            response.setStatusCode("00");
+            response.setStatusValue("OK");
 
         }catch (Exception e) {
             response.setStatusCode("99");
