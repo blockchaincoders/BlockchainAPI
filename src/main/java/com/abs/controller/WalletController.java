@@ -44,9 +44,8 @@ public class WalletController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/createWallet", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String createWallet(HttpServletRequest request, String walletAlias, String passphrase)
-    {
+    @RequestMapping(value = "/createWallet", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String createWallet(HttpServletRequest request, String walletAlias, String passphrase) {
         Response response = new Response();
 
         try {
@@ -55,7 +54,7 @@ public class WalletController {
             //Integer idCustomer = (Integer) request.getAttribute(Constant.ID_CUSTOMER_KEY);
             System.out.println(idCustomer);
 //            long idCustomer =(long) request.getSession().getAttribute(Constant.ID_CUSTOMER_KEY);
-            String fileNameOrg = createNewWalletAccount(walletAlias,passphrase,idCustomer);
+            String fileNameOrg = createNewWalletAccount(walletAlias, passphrase, idCustomer);
 
             //create wallet entity
             WalletEntity entity = new WalletEntity();
@@ -73,31 +72,30 @@ public class WalletController {
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
         }
         return AppUtils.convertToJson(response);
     }
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/fetchWallets", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String fetchWallets(HttpServletRequest request)
-    {
+    @RequestMapping(value = "/fetchWallets", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String fetchWallets(HttpServletRequest request) {
         Response response = new Response();
         try {
             //todo fetch customer id from session
-            Integer idCustomer =(Integer) request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY);
+            Integer idCustomer = (Integer) request.getSession(false).getAttribute(Constant.ID_CUSTOMER_KEY);
             List<WalletEntity> walletEntityList = walletService.fetchAllCustomerWallets(idCustomer);
 
             response.setDataList(walletEntityList);
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
         }
         return AppUtils.convertToJson(response);
     }
@@ -105,22 +103,24 @@ public class WalletController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/fetchBalance", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String fetchBalance(String walletAddress)
-    {
+    @RequestMapping(value = "/fetchBalance", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String fetchBalance(String walletAddress) {
         Response response = new Response();
         try {
+            if (!walletAddress.startsWith("0x")) {
+                walletAddress = "0x" + walletAddress;
+            }
 
             EthGetBalance ethGetBalance = getEtherBalanceOfWallet(walletAddress);
             BigInteger value = ethGetBalance.getBalance();
-            response.setData(value);
+            response.setData(Convert.fromWei(String.valueOf(value), Convert.Unit.ETHER));
 
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
         }
         return AppUtils.convertToJson(response);
     }
@@ -128,13 +128,12 @@ public class WalletController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/fetchEthCoinBase", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String fetchEthCoinBase()
-    {
+    @RequestMapping(value = "/fetchEthCoinBase", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String fetchEthCoinBase() {
         Response response = new Response();
         try {
 
-            if(web3j==null) {
+            if (web3j == null) {
                 web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
             }
 
@@ -144,18 +143,17 @@ public class WalletController {
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
         }
         return AppUtils.convertToJson(response);
     }
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/transferEthCoinBaseFunds", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String transferEthCoinBaseFunds(String fromWallet, String toWallet, Double amount)
-    {
+    @RequestMapping(value = "/transferEthCoinBaseFunds", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String transferEthCoinBaseFunds(String fromWallet, String toWallet, Double amount) {
         Response response = new Response();
         try {
 
@@ -176,23 +174,21 @@ public class WalletController {
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
         }
         return AppUtils.convertToJson(response);
     }
 
 
-
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/transferFunds", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String transferFunds(HttpServletRequest request,String fromWallet, String toWallet, Double amount)
-    {
+    @RequestMapping(value = "/transferFunds", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String transferFunds(HttpServletRequest request, String fromWallet, String toWallet, Double amount) {
         Response response = new Response();
-        WalletEntity fromWalletEntity=null;
-        WalletEntity toWalletEntity=null;
+        WalletEntity fromWalletEntity = null;
+        WalletEntity toWalletEntity = null;
 //        Integer idCustomer=null;
         try {
 
@@ -204,13 +200,13 @@ public class WalletController {
             fromWalletEntity = walletService.fetchWalletDetailsByAlias(fromWallet);
             toWalletEntity = walletService.fetchWalletDetailsByAlias(toWallet);
 
-            String path = "D:\\BlockChain\\WalletFiles\\"+ fromWalletEntity.getWalletFileName();
+            String path = "D:\\BlockChain\\WalletFiles\\" + fromWalletEntity.getWalletFileName();
             String walletPassphrase = fromWalletEntity.getWalletPassphrase();
 
             TransactionReceipt transactionReceipt = doTransaction(walletPassphrase, path, fromWallet, toWalletEntity.getWalletAddress(), amount);
 
 
-            TransactionHistoryEntity entity=new TransactionHistoryEntity();
+            TransactionHistoryEntity entity = new TransactionHistoryEntity();
             entity.setFromAccAlias(fromWallet);
             entity.setFromAccAddress(fromWalletEntity.getWalletAddress());
             entity.setToAccAlias(toWallet);
@@ -227,9 +223,9 @@ public class WalletController {
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
 
-            TransactionHistoryEntity entity=new TransactionHistoryEntity();
+            TransactionHistoryEntity entity = new TransactionHistoryEntity();
             entity.setFromAccAlias(fromWallet);
             entity.setFromAccAddress(fromWalletEntity.getWalletAddress());
             entity.setToAccAlias(toWallet);
@@ -241,7 +237,7 @@ public class WalletController {
             entity.setTxnAmount(amount.toString());
 
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
             transactionHistoryService.addTxnHistory(entity);
         }
 
@@ -250,13 +246,12 @@ public class WalletController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/getBlockInfo", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String getBlockInfo()
-    {
+    @RequestMapping(value = "/getBlockInfo", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String getBlockInfo() {
         Response response = new Response();
         try {
 
-            if(web3j==null) {
+            if (web3j == null) {
                 web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
             }
 
@@ -280,8 +275,8 @@ public class WalletController {
             blockInfoBean.setReceiptsRoot(block.getReceiptsRoot());
             blockInfoBean.setSizeRaw(block.getSizeRaw());
 
-            List<EthBlock.TransactionResult>  transactionResults = block.getTransactions();
-            for (int i=0; i< transactionResults.size(); i++) {
+            List<EthBlock.TransactionResult> transactionResults = block.getTransactions();
+            for (int i = 0; i < transactionResults.size(); i++) {
                 EthBlock.TransactionResult transactionResult = transactionResults.get(i);
                 blockInfoBean.getTransactionResults().add(transactionResult.get().toString());
             }
@@ -290,100 +285,98 @@ public class WalletController {
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
         }
         return AppUtils.convertToJson(response);
     }
 
 
-
-
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/fetchGraphData", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String chartData(){
+    @RequestMapping(value = "/fetchGraphData", method = {RequestMethod.POST}, produces = Constant.APPLICATION_JSON)
+    public String chartData() {
 
         AreaChartBean bean = new AreaChartBean();
 
         bean.setElement("morris-area-chart");//todo this element id can be set from angularjs which is a proper method to set chart div
 
-        AreaChartMobileData data[]= new AreaChartMobileData[10];
-        AreaChartMobileData info1= new AreaChartMobileData();
+        AreaChartMobileData data[] = new AreaChartMobileData[10];
+        AreaChartMobileData info1 = new AreaChartMobileData();
         info1.setPeriod("2010 Q1");
         info1.setIphone(2666);
         info1.setIpad(null);
         info1.setItouch(2647);
 
-        AreaChartMobileData info2= new AreaChartMobileData();
+        AreaChartMobileData info2 = new AreaChartMobileData();
         info2.setPeriod("2010 Q2");
         info2.setIphone(2778);
         info2.setIpad(2294);
         info2.setItouch(2441);
 
-        AreaChartMobileData info3= new AreaChartMobileData();
+        AreaChartMobileData info3 = new AreaChartMobileData();
         info3.setPeriod("2010 Q3");
         info3.setIphone(4912);
         info3.setIpad(1969);
         info3.setItouch(2501);
 
 
-        AreaChartMobileData info4=new AreaChartMobileData();
+        AreaChartMobileData info4 = new AreaChartMobileData();
         info4.setPeriod("2010 Q4");
         info4.setIphone(3767);
         info4.setIpad(3597);
         info4.setItouch(5689);
 
 
-        AreaChartMobileData info5= new AreaChartMobileData();
+        AreaChartMobileData info5 = new AreaChartMobileData();
         info5.setPeriod("2011 Q1");
         info5.setIphone(6810);
         info5.setIpad(1914);
         info5.setItouch(2293);
 
-        AreaChartMobileData info6= new AreaChartMobileData();
+        AreaChartMobileData info6 = new AreaChartMobileData();
         info6.setPeriod("2011 Q2");
         info6.setIphone(5670);
         info6.setIpad(4293);
         info6.setItouch(1881);
 
-        AreaChartMobileData info7= new AreaChartMobileData();
+        AreaChartMobileData info7 = new AreaChartMobileData();
         info7.setPeriod("2011 Q3");
         info7.setIphone(4820);
         info7.setIpad(3795);
         info7.setItouch(1588);
 
-        AreaChartMobileData info8= new AreaChartMobileData();
+        AreaChartMobileData info8 = new AreaChartMobileData();
         info8.setPeriod("2011 Q4");
         info8.setIphone(15073);
         info8.setIpad(5967);
         info8.setItouch(5175);
 
 
-        AreaChartMobileData info9= new AreaChartMobileData();
+        AreaChartMobileData info9 = new AreaChartMobileData();
         info9.setPeriod("2012 Q1");
         info9.setIphone(10687);
         info9.setIpad(4460);
         info9.setItouch(2028);
 
 
-        AreaChartMobileData info10= new AreaChartMobileData();
+        AreaChartMobileData info10 = new AreaChartMobileData();
         info10.setPeriod("2012 Q2");
         info10.setIphone(8432);
         info10.setIpad(5713);
         info10.setItouch(1791);
 
-        data[0]=info1;
-        data[1]=info2;
-        data[2]=info3;
-        data[3]=info4;
-        data[4]=info5;
-        data[5]=info6;
-        data[6]=info7;
-        data[7]=info8;
-        data[8]=info9;
-        data[9]=info10;
+        data[0] = info1;
+        data[1] = info2;
+        data[2] = info3;
+        data[3] = info4;
+        data[4] = info5;
+        data[5] = info6;
+        data[6] = info7;
+        data[7] = info8;
+        data[8] = info9;
+        data[9] = info10;
 
         bean.setData(data);
         bean.setXkey(AreaChartMobileData.getXKey());
@@ -430,7 +423,7 @@ public class WalletController {
 
     public TransactionReceipt doTransaction(String password, String path, String fromWallet, String toWallet, Double amount) throws Exception {
 
-        if(web3j==null) {
+        if (web3j == null) {
             web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
         }
 
@@ -438,15 +431,15 @@ public class WalletController {
 
         TransactionReceipt transactionReceipt = Transfer.sendFunds(
                 web3j, credentials, toWallet, BigDecimal.valueOf(amount), Convert.Unit.ETHER);
-        System.out.println("transactionReceipt.getBlockNumber(): "+ transactionReceipt.getBlockNumber());
-        System.out.println("transactionReceipt.getBlockHash(): "+ transactionReceipt.getBlockHash());
-        System.out.println("transactionReceipt.getBlockNumberRaw(): "+ transactionReceipt.getBlockNumberRaw());
-        System.out.println("transactionReceipt.getContractAddress(): "+ transactionReceipt.getContractAddress());
-        System.out.println("transactionReceipt.getCumulativeGasUsedRaw(): "+ transactionReceipt.getCumulativeGasUsedRaw());
-        System.out.println("transactionReceipt.getGasUsedRaw(): "+ transactionReceipt.getGasUsedRaw());
-        System.out.println("transactionReceipt.getFrom(): "+ transactionReceipt.getFrom());
-        System.out.println("transactionReceipt.getTo(): "+ transactionReceipt.getTo());
-        System.out.println("transactionReceipt.getTransactionIndex(): "+ transactionReceipt.getTransactionIndex());
+        System.out.println("transactionReceipt.getBlockNumber(): " + transactionReceipt.getBlockNumber());
+        System.out.println("transactionReceipt.getBlockHash(): " + transactionReceipt.getBlockHash());
+        System.out.println("transactionReceipt.getBlockNumberRaw(): " + transactionReceipt.getBlockNumberRaw());
+        System.out.println("transactionReceipt.getContractAddress(): " + transactionReceipt.getContractAddress());
+        System.out.println("transactionReceipt.getCumulativeGasUsedRaw(): " + transactionReceipt.getCumulativeGasUsedRaw());
+        System.out.println("transactionReceipt.getGasUsedRaw(): " + transactionReceipt.getGasUsedRaw());
+        System.out.println("transactionReceipt.getFrom(): " + transactionReceipt.getFrom());
+        System.out.println("transactionReceipt.getTo(): " + transactionReceipt.getTo());
+        System.out.println("transactionReceipt.getTransactionIndex(): " + transactionReceipt.getTransactionIndex());
 
         return transactionReceipt;
 
@@ -464,7 +457,7 @@ public class WalletController {
         System.out.println("Transfer Funds:" + ethSendTransaction.getJsonrpc() + "<===>" + ethSendTransaction.getResult());*/
     }
 
-    private String createNewWalletAccount(String walletAlias,String passphrase , long idCustomer) throws Exception {
+    private String createNewWalletAccount(String walletAlias, String passphrase, long idCustomer) throws Exception {
         String fileNameOrg = WalletUtils.generateNewWalletFile(passphrase, new File("D:\\BlockChain\\WalletFiles"), true);
         System.out.println(fileNameOrg);
         return fileNameOrg;
@@ -472,7 +465,7 @@ public class WalletController {
 
     public EthGetBalance getEtherBalanceOfWallet(String walletAddress) throws Exception {
 
-        if(web3j==null) {
+        if (web3j == null) {
             web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
         }
 
