@@ -42,11 +42,11 @@ public class TransactionController {
 
                 TransactionHistory txn=new TransactionHistory();
                 txn.setFromAccAlias(entity.getFromAccAlias());
-                txn.setFromAccAlias(entity.getFromAccAddress());
+                txn.setFromAccAddress(entity.getFromAccAddress());
                 txn.setToAccAlias(entity.getToAccAlias());
-                txn.setToAccAlias(entity.getToAccAddress());
+                txn.setToAccAddress(entity.getToAccAddress());
                 txn.setAmount(entity.getTxnAmount());
-                txn.setAmount(entity.getTxnStatus().equals("00")?"Success":"Failed");
+                txn.setStatus(entity.getTxnStatus().equals("00")?"Success":"Failed");
                 txn.setTxnDate(entity.getTxnDate().toString());
                 txnHistory.add(txn);
             }
