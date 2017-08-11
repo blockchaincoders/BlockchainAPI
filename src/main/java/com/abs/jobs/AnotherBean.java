@@ -30,12 +30,12 @@ public class AnotherBean {
 
     private Web3j web3j;
 
-    public void printAnotherMessage(){
+    public void printAnotherMessage() {
         System.out.println("Job Started");
         Response response = new Response();
         try {
 
-            if(web3j==null) {
+            if (web3j == null) {
                 web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
             }
 
@@ -64,12 +64,13 @@ public class AnotherBean {
 
             blockInfoService.createBlockInfo(entity);
 
+
             response.setStatusCode("00");
             response.setStatusValue("OK");
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.setStatusCode("99");
-            response.setStatusValue("Error:"+e.getMessage());
+            response.setStatusValue("Error:" + e.getMessage());
         }
 
         System.out.println("Job Ended");

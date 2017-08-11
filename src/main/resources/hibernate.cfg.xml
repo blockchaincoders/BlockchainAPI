@@ -8,5 +8,6 @@
         <mapping class="com.abs.entity.CustomerEntity" />
         <mapping class="com.abs.entity.WalletEntity" />
         <mapping class="com.abs.entity.BlockInfoEntity" />
+        <mapping class="com.abs.entity.TransactionHistoryEntity" />
     </session-factory>
 </hibernate-configuration>
