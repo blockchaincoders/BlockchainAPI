@@ -113,7 +113,7 @@ public class WalletController {
 
             EthGetBalance ethGetBalance = getEtherBalanceOfWallet(walletAddress);
             BigInteger value = ethGetBalance.getBalance();
-            response.setData(Convert.fromWei(String.valueOf(value), Convert.Unit.ETHER) + " Ether (" + value + " Wei)");
+            response.setData(value);
 
             response.setStatusCode("00");
             response.setStatusValue("OK");

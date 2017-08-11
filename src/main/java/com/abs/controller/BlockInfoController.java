@@ -200,8 +200,7 @@ public class BlockInfoController {
                 try {
 
                     BigInteger index = BigInteger.valueOf(i);
-                    EthTransaction ethTransaction = web3j.ethGetTransactionByBlockNumberAndIndex(
-                            DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), index).send();
+                    EthTransaction ethTransaction = web3j.ethGetTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), index).send();
                     System.out.println(ethTransaction.getTransaction().isPresent());
                     Transaction transaction = ethTransaction.getTransaction().get();
                     transactions.add(transaction);
@@ -249,7 +248,7 @@ public class BlockInfoController {
             basicInfoBean.setEthCoinBase(ethCoinbase.getAddress());
 
             EthMining ethMining = web3j.ethMining().send();
-            basicInfoBean.setEthMining(ethMining.getResult().toString());
+            basicInfoBean.setEthMining(ethMining.getResult()==true?"Processing":"Stopped");
 
             EthProtocolVersion ethProtocolVersion = web3j.ethProtocolVersion().send();
             basicInfoBean.setEthProtocol(ethProtocolVersion.getProtocolVersion());
