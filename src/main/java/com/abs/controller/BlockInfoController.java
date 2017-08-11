@@ -14,10 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.Request;
-import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthGetBlockTransactionCountByNumber;
-import org.web3j.protocol.core.methods.response.EthTransaction;
-import org.web3j.protocol.core.methods.response.Transaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -188,8 +185,8 @@ public class BlockInfoController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/getBlockDetails", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
-    public String getBlockDetails(long blockNumber)
+    @RequestMapping(value = "/getBlockTxnDetails", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String getBlockTxnDetails(long blockNumber)
     {
         Response response = new Response();
         try {
@@ -214,6 +211,50 @@ public class BlockInfoController {
                 }
             }
             response.setData(transactions);
+
+            response.setStatusCode("00");
+            response.setStatusValue("OK");
+
+        }catch (Exception e) {
+            response.setStatusCode("99");
+            response.setStatusValue("Error:"+e.getMessage());
+        }
+        return AppUtils.convertToJson(response);
+    }
+
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/getBasicDetails", method = { RequestMethod.POST }, produces = Constant.APPLICATION_JSON)
+    public String getBasicDetails()
+    {
+        Response response = new Response();
+        try {
+            if(web3j==null) {
+                web3j = Web3j.build(new HttpService("http://192.168.18.188:8545"));  // defaults to http://localhost:8545/
+            }
+
+            BasicInfoBean basicInfoBean = new BasicInfoBean();
+
+            Web3ClientVersion web3ClientVersion = web3j.web3ClientVersion().send();
+            basicInfoBean.setWeb3ClientVersion(web3ClientVersion.getWeb3ClientVersion());
+
+            NetVersion netVersion = web3j.netVersion().send();
+            basicInfoBean.setNetVersion(netVersion.getNetVersion());
+
+            NetPeerCount netPeerCount = web3j.netPeerCount().send();
+            basicInfoBean.setPeerCount(netPeerCount.getQuantity().toString());
+
+            EthCoinbase ethCoinbase = web3j.ethCoinbase().send();
+            basicInfoBean.setEthCoinBase(ethCoinbase.getAddress());
+
+            EthMining ethMining = web3j.ethMining().send();
+            basicInfoBean.setEthMining(ethMining.getResult().toString());
+
+            EthProtocolVersion ethProtocolVersion = web3j.ethProtocolVersion().send();
+            basicInfoBean.setEthProtocol(ethProtocolVersion.getProtocolVersion());
+
+            response.setData(basicInfoBean);
 
             response.setStatusCode("00");
             response.setStatusValue("OK");
